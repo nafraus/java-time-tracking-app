@@ -1,14 +1,25 @@
 import java.awt.FlowLayout;
-import java.time.LocalTime;
+import java.awt.event.ActionEvent;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 
 public class Main {
+    
     private static boolean isTimerRunning = false;
-    private static int count = 0;
+    private static ZonedDateTime utcTimerStartTime;
+    
+    //UI
+    private static JButton timerButton;
+    private static JLabel label;
+
+
 
     public static void main(String[] args) {
 
@@ -17,29 +28,47 @@ public class Main {
         frame.setSize(300, 200);
         frame.setLayout(new FlowLayout());
 
-        JLabel label = new JLabel(LocalTime.now().toString(), SwingConstants.CENTER);
+        label = new JLabel(ZonedDateTime.now(ZoneId.of("UTC")).toString(), SwingConstants.CENTER);
         frame.add(label);
+        
+        timerButton = new JButton("Start Timer");
 
-        JButton button = new JButton("Start Timer");
 
-
-        button.addActionListener(e -> {
-
+        timerButton.addActionListener(e -> {
             if(isTimerRunning){
                 //Stop Timer
-                button.setText("Start Timer");
+                StopTimer();
             }else{
                 //Start Timer
-                button.setText("Stop Timer");
+                StartTimer();
             }
-            isTimerRunning = !isTimerRunning;
         });
 
+        frame.add(timerButton);
 
-        frame.add(button);
+        Timer timer = new Timer(1000, (ActionEvent e) -> {
+            Update();
+        });
 
+        timer.start();
 
-        // Make the frame visible
         frame.setVisible(true);
+    }
+
+    private static void StartTimer(){
+        timerButton.setText("Stop Timer");
+        isTimerRunning = true;  
+
+        utcTimerStartTime = ZonedDateTime.now(ZoneId.of("UTC"));
+    }
+
+    private static void StopTimer(){
+        timerButton.setText("Start Timer");
+        isTimerRunning = false;  
+    }
+
+    private static void Update(){
+        if(!isTimerRunning) return;
+        label.setText(Duration.between(ZonedDateTime.now(ZoneId.of("UTC")), utcTimerStartTime).toString());
     }
 }
